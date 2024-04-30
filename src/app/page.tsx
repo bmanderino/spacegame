@@ -1,95 +1,42 @@
 import Image from "next/image";
 import styles from "./page.module.css";
+import { createClient } from '@/utils/supabase/server';
+import { ReactElement, JSXElementConstructor, ReactNode, ReactPortal, AwaitedReactNode } from "react";
 
-export default function Home() {
+// these can all be different commits
+// - make sure everything is server components (sanity check - turn off JS in browser)
+// - [X] populate a row with a sample save state (serialized state of the world, not the setup inputs)
+// - [X] load that data via supabase
+// - [ ] unpack next steps for setup
+
+// type StateOfWorld = {
+//   player: unknown;
+// }
+type StateOfWorld = any;
+
+async function loadWorld(): StateOfWorld {
+  // TODO: actually pull from supabase
+  // let's hardcode the first row
+  const supabase = createClient();
+  const { data: world } = await supabase.from("world").select();
+  const userID = '1';
+
+
+  // this is the state of the world, not the setup input
+  return world
+}
+
+export default async function Home() {
+  const worldState = await loadWorld();
+  console.log(worldState)
+
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+    <main>
+      {worldState.map((world:any) => <div key={world.id}>
+        <p>Name: {world.worldState.character?.name}</p>
+        <p>Role: {world.worldState.character?.role}</p>
+        <p>ShipName: {world.worldState.character?.shipName}</p>
+      </div>)}
     </main>
   );
 }
