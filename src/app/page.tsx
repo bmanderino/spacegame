@@ -26,6 +26,11 @@ const database = {
   ] as InventoryItem[]
 }
 
+//possible debug functions
+// clear world
+// clear inventory
+// add currency
+
 async function loadWorld(): Promise<WorldState> {
   const { data: world } = await supabase
     .from("world")
@@ -35,16 +40,10 @@ async function loadWorld(): Promise<WorldState> {
   return (world?.[0] as any)?.worldState
 }
 
-async function addItemToInventory(itemId: number, world: WorldState) {
-  let inventoryItem = database.inventory.find((inv) => inv.ID = itemId)
+function addItemToInventory(itemId: number, world: WorldState) {
+  let inventoryItem = database.inventory.find((inv) => inv.ID == itemId)
   if (inventoryItem){
     world.player.inventory.items.push({...inventoryItem, "equipped": false, "count": 1})
-
-    const {data, error} = await supabase
-      .from('world')
-      .update({ worldState: world })
-      .eq('id', userID)
-      .select()
   }
 }
 
@@ -68,11 +67,11 @@ export default async function Home() {
     await saveWorld(world)
     redirect('/')
   }
-  // saveWorld(world)
 
   async function takeItem() {
     'use server'
-    await addItemToInventory(4, world)
+    addItemToInventory(4, world)
+    await saveWorld(world)
     redirect('/')
   }
 
@@ -83,9 +82,9 @@ export default async function Home() {
         <p>Role: {world.player.role}</p>
         <p>ShipName: {world.player.shipName}</p>
         <p>Stats:</p>
-        <div>{Object.keys(world.player.stats).map((key) => <p key={key}>{key}: {world.player.stats[key as keyof CharacterStats]}</p>)}</div>
+        <div>{Object.keys(world.player.stats).map((key, index) => <p key={index}>{key}: {world.player.stats[key as keyof CharacterStats]}</p>)}</div>
         <div>Inventory:</div>
-        <div>{world.player.inventory.items.map((item) => <p key={item.ID}>{item.name}</p>)}</div>
+        <div>{world.player.inventory.items.map((item, i) => <p key={i}>{item.name}</p>)}</div>
 
         <form action={doSomething}>
           <input type='submit'/>
@@ -94,6 +93,8 @@ export default async function Home() {
           <input type='submit' value="add item"/>
         </form>
       </div>
+
+      <code><pre>{JSON.stringify(world, null, 2)}</pre></code>
     </main>
   );
 }
